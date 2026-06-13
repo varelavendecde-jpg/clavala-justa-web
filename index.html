@@ -1,1 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>Clavala Justa</title>
+  <style>
+    :root{
+      --bg:#0a0e17; --bg2:#0f1729; --card:#131c2e; --line:#1f2d44;
+      --txt:#eaf2ff; --mut:#7e8ba3;
+      --cyan:#22d3ee; --cyan-d:#0e7490; --orange:#f97316; --err:#f87171;
+    }
+    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    body{
+      margin:0; color:var(--txt);
+      font-family:-apple-system,Segoe UI,Roboto,sans-serif;
+      background:
+        radial-gradient(circle at 20% 0%, #102036 0%, transparent 55%),
+        radial-gradient(circle at 100% 100%, #0c1830 0%, transparent 50%),
+        var(--bg);
+      min-height:100vh; padding:16px;
+    }
+    .logo{ display:block; max-width:230px; width:62%; margin:8px auto 18px; border-radius:16px; }
+    .card{
+      background:linear-gradient(180deg, var(--card), var(--bg2));
+      border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:14px;
+      box-shadow:0 4px 24px rgba(0,0,0,.35);
+    }
+    .lbl{ font-size:12px; color:var(--mut); display:block; margin-bottom:6px;
+          text-transform:uppercase; letter-spacing:1px; }
+    .saldo{ font-size:34px; font-weight:800; color:var(--cyan);
+            text-shadow:0 0 22px rgba(34,211,238,.45); font-style:italic; }
+    .acum{ font-size:13px; color:var(--orange); margin-top:2px; font-weight:600; }
+    input,select{
+      width:100%; padding:14px; border-radius:12px; border:1px solid var(--line);
+      background:#0a1220; color:var(--txt); font-size:17px; outline:none;
+    }
+    input:focus,select:focus{ border-color:var(--cyan); box-shadow:0 0 0 3px rgba(34,211,238,.15); }
+    button{
+      width:100%; padding:16px; border:0; border-radius:12px;
+      background:linear-gradient(135deg, var(--cyan), var(--cyan-d));
+      color:#04121b; font-size:17px; font-weight:800; margin-top:12px;
+      letter-spacing:.3px; box-shadow:0 0 20px rgba(34,211,238,.35);
+      cursor:pointer; transition:transform .08s;
+    }
+    button:active{ transform:scale(.98); }
+    button:disabled{ opacity:.55; }
+    .btn-mp{ background:linear-gradient(135deg, var(--orange), #c2410c);
+             color:#fff; box-shadow:0 0 20px rgba(249,115,22,.3); }
+    .match-top{ display:flex; justify-content:space-between; align-items:center;
+                font-weight:800; font-size:18px; font-style:italic; margin-bottom:4px; }
+    .vs{ color:var(--mut); font-size:12px; font-style:normal; font-weight:600; }
+    .meta{ font-size:12px; color:var(--mut); margin-bottom:14px; }
+    .pozo{ color:var(--cyan); font-weight:700; }
+    .goles{ display:flex; gap:10px; align-items:flex-end; }
+    .goles>div{ flex:1; }
+    .goles input{ text-align:center; font-size:22px; font-weight:700; padding:12px; }
+    .hidden{ display:none; }
+    .msg{ text-align:center; font-size:14px; padding:8px 0 0; min-height:18px; }
+    .ok{ color:var(--cyan); } .bad{ color:var(--err); }
+    .ap{ font-size:14px; border-top:1px solid var(--line); padding:9px 0; }
+    .ap:first-child{ border-top:0; }
+    .ap b{ color:var(--cyan); } .ap .perd{ color:var(--err); } .ap .pend{ color:var(--orange); }
+    .titulo{ font-size:13px; color:var(--mut); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+    .link{ text-align:center; color:var(--mut); font-size:13px; margin:18px 0 8px; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <img class="logo" src="https://i.postimg.cc/C1rbvMrH/Whats-App-Image-2026-06-13-at-17-38-21.jpg" alt="Clavala Justa">
 
+  <div id="login" class="card">
+    <span class="lbl">Tu nombre</span>
+    <select id="selNombre"></select>
+    <span class="lbl" style="margin-top:14px">PIN</span>
+    <input id="inPin" type="tel" inputmode="numeric" placeholder="••••">
+    <button id="btnEntrar" onclick="entrar()">Entrar</button>
+    <div id="msgLogin" class="msg"></div>
+  </div>
+
+  <div id="app" class="hidden">
+    <div class="card">
+      <span class="lbl">Saldo disponible</span>
+      <div class="saldo">$<span id="saldo">0</span></div>
+      <div class="acum">🔥 Pozo acumulado: $<span id="acum">0</span></div>
+    </div>
+    <div class="card">
+      <span class="lbl">Cargar saldo</span>
+      <input id="inCarga" type="tel" inputmode="numeric" placeholder="Monto $">
+      <button class="btn-mp" onclick="cargar()">Cargar con Mercado Pago</button>
+      <div id="msgCarga" class="msg"></div>
+    </div>
+    <div id="partidos"></div>
+    <div class="card">
+      <div class="titulo">Mis apuestas</div>
+      <div id="misApuestas"></div>
+    </div>
+    <div class="link" onclick="salir()">Cerrar sesión</div>
+  </div>
+
+<script>
+  var API='https://script.google.com/macros/s/AKfycbycpOAamkiqPc2Ih0OxEeaOiH8fikZa-OMLRYUiyEs5ZP4z-G8e-CYRycjh48wtDrkTSQ/exec';
+  var NOMBRE='', PIN='', _cbId=0;
+
+  function api(params, cb){
+    var cbName='cb_'+(++_cbId);
+    params.callback=cbName;
+    window[cbName]=function(data){
+      delete window[cbName];
+      document.body.removeChild(s);
+      cb(data);
+    };
+    var qs=Object.keys(params).map(function(k){
+      return encodeURIComponent(k)+'='+encodeURIComponent(params[k]);
+    }).join('&');
+    var s=document.createElement('script');
+    s.src=API+'?'+qs;
+    s.onerror=function(){ delete window[cbName]; cb({ok:false,error:'Error de conexión'}); };
+    document.body.appendChild(s);
+  }
+
+  window.onload=function(){
+    var n=localStorage.getItem('cj_n'), p=localStorage.getItem('cj_p');
+    api({action:'getNombres'}, function(r){
+      if(r.ok) document.getElementById('selNombre').innerHTML=
+        r.nombres.map(function(n){return '<option>'+n+'</option>';}).join('');
+    });
+    if(n&&p){ NOMBRE=n; PIN=p; cargarEstado(false); }
+  };
+
+  function entrar(){
+    NOMBRE=document.getElementById('selNombre').value;
+    PIN=document.getElementById('inPin').value.trim();
+    msg('msgLogin','Verificando...','');
+    cargarEstado(true);
+  }
+
+  function cargarEstado(desdeLogin){
+    api({action:'getEstado', nombre:NOMBRE, pin:PIN}, function(e){
+      if(!e.ok){ if(desdeLogin) msg('msgLogin',e.error,'bad'); return; }
+      localStorage.setItem('cj_n',NOMBRE); localStorage.setItem('cj_p',PIN);
+      document.getElementById('login').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+      render(e);
+    });
+  }
+
+  function render(e){
+    document.getElementById('saldo').textContent=e.saldo;
+    document.getElementById('acum').textContent=e.acumulado;
+    var cont=document.getElementById('partidos');
+    if(!e.partidos.length){
+      cont.innerHTML='<div class="card meta" style="text-align:center">No hay partidos abiertos por ahora.</div>';
+    } else {
+      cont.innerHTML=e.partidos.map(function(p){
+        return '<div class="card">'
+          +'<div class="match-top"><span>'+p.local+'</span><span class="vs">VS</span><span>'+p.visitante+'</span></div>'
+          +'<div class="meta">'+p.fecha+' · <span class="pozo">Pozo: $'+p.pozo+'</span>'
+          +(p.acumulado?' (+$'+p.acumulado+' acum.)':'')+'</div>'
+          +'<div class="goles">'
+          +'<div><span class="lbl">'+p.local.substring(0,3)+'</span><input id="gl_'+p.id+'" type="tel" inputmode="numeric" value="0"></div>'
+          +'<div><span class="lbl">'+p.visitante.substring(0,3)+'</span><input id="gv_'+p.id+'" type="tel" inputmode="numeric" value="0"></div>'
+          +'<div><span class="lbl">Monto $</span><input id="m_'+p.id+'" type="tel" inputmode="numeric"></div>'
+          +'</div>'
+          +'<button onclick="apostar(\''+p.id+'\')">Clavar apuesta</button>'
+          +'<div id="msg_'+p.id+'" class="msg"></div>'
+          +'</div>';
+      }).join('');
+    }
+    var ma=document.getElementById('misApuestas');
+    if(e.misApuestas.length){
+      ma.innerHTML=e.misApuestas.map(function(a){
+        var est=a.estado;
+        if(a.estado==='Ganada') est='<b>Ganada +$'+a.premio+'</b>';
+        else if(a.estado==='Perdida') est='<span class="perd">Perdida</span>';
+        else est='<span class="pend">Pendiente</span>';
+        return '<div class="ap">'+a.partido+' · '+a.pronostico+' · $'+a.monto+' · '+est+'</div>';
+      }).join('');
+    } else {
+      ma.innerHTML='<div class="meta">Sin apuestas todavía.</div>';
+    }
+  }
+
+  function apostar(id){
+    var gl=document.getElementById('gl_'+id).value;
+    var gv=document.getElementById('gv_'+id).value;
+    var m=document.getElementById('m_'+id).value;
+    msg('msg_'+id,'Procesando...','');
+    api({action:'apostar', nombre:NOMBRE, pin:PIN, partidoID:id, gl:gl, gv:gv, monto:m}, function(r){
+      if(r.ok){ msg('msg_'+id,'¡Apuesta clavada!','ok'); cargarEstado(false); }
+      else msg('msg_'+id,r.error,'bad');
+    });
+  }
+
+  function cargar(){
+    var m=document.getElementById('inCarga').value;
+    if(!(Number(m)>0)){ msg('msgCarga','Monto inválido','bad'); return; }
+    msg('msgCarga','Generando link...','');
+    api({action:'crearPreferencia', nombre:NOMBRE, pin:PIN, monto:m}, function(r){
+      if(r.ok) window.location.href=r.link;
+      else msg('msgCarga',r.error,'bad');
+    });
+  }
+
+  function salir(){
+    localStorage.removeItem('cj_n'); localStorage.removeItem('cj_p');
+    location.reload();
+  }
+
+  function msg(idEl,t,cls){
+    var el=document.getElementById(idEl);
+    el.textContent=t; el.className='msg '+(cls||'');
+  }
+</script>
+</body>
+</html>
