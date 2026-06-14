@@ -32,11 +32,11 @@
             text-shadow:0 0 22px rgba(34,211,238,.45); font-style:italic; }
     .acum{ font-size:13px; color:var(--orange); margin-top:2px; font-weight:600; }
     .campeon{ font-size:13px; color:var(--gold); margin-top:2px; font-weight:600; }
-    input,select{
+    input{
       width:100%; padding:14px; border-radius:12px; border:1px solid var(--line);
       background:#0a1220; color:var(--txt); font-size:17px; outline:none;
     }
-    input:focus,select:focus{ border-color:var(--cyan); box-shadow:0 0 0 3px rgba(34,211,238,.15); }
+    input:focus{ border-color:var(--cyan); box-shadow:0 0 0 3px rgba(34,211,238,.15); }
     button{
       width:100%; padding:16px; border:0; border-radius:12px;
       background:linear-gradient(135deg, var(--cyan), var(--cyan-d));
@@ -80,7 +80,7 @@
 
   <div id="login" class="card">
     <span class="lbl">Tu nombre</span>
-    <select id="selNombre"></select>
+    <input id="inNombre" type="text" placeholder="Tu nombre" autocomplete="off">
     <span class="lbl" style="margin-top:14px">PIN</span>
     <input id="inPin" type="tel" inputmode="numeric" placeholder="••••">
     <button onclick="entrar()">Entrar</button>
@@ -90,7 +90,7 @@
 
   <div id="registro" class="card hidden">
     <span class="lbl">Elegí tu nombre</span>
-    <input id="regNombre" type="text" placeholder="Tu nombre">
+    <input id="regNombre" type="text" placeholder="Tu nombre" autocomplete="off">
     <span class="lbl" style="margin-top:14px">Creá un PIN (4+ dígitos)</span>
     <input id="regPin" type="tel" inputmode="numeric" placeholder="••••">
     <button onclick="registrar()">Crear cuenta</button>
@@ -100,7 +100,7 @@
 
   <div id="app" class="hidden">
     <div class="card">
-      <span class="lbl">Saldo disponible</span>
+      <span class="lbl">Hola, <span id="miNombre"></span></span>
       <div class="saldo">$<span id="saldo">0</span></div>
       <div class="acum">🔥 Pozo acumulado: $<span id="acum">0</span></div>
       <div class="campeon">🏆 Pozo Campeón: $<span id="campeon">0</span></div>
@@ -145,16 +145,8 @@
 
   window.onload=function(){
     var n=localStorage.getItem('cj_n'), p=localStorage.getItem('cj_p');
-    cargarNombres();
     if(n&&p){ NOMBRE=n; PIN=p; cargarEstado(false); }
   };
-
-  function cargarNombres(){
-    api({action:'getNombres'}, function(r){
-      if(r.ok) document.getElementById('selNombre').innerHTML=
-        r.nombres.map(function(n){return '<option>'+n+'</option>';}).join('');
-    });
-  }
 
   function verRegistro(){ document.getElementById('login').classList.add('hidden'); document.getElementById('registro').classList.remove('hidden'); }
   function verLogin(){ document.getElementById('registro').classList.add('hidden'); document.getElementById('login').classList.remove('hidden'); }
@@ -167,15 +159,15 @@
       if(r.ok){
         msg('msgReg','¡Cuenta creada!','ok');
         NOMBRE=r.nombre; PIN=pin;
-        cargarNombres();
         setTimeout(function(){ cargarEstado(true); }, 600);
       } else msg('msgReg', r.error, 'bad');
     });
   }
 
   function entrar(){
-    NOMBRE=document.getElementById('selNombre').value;
+    NOMBRE=document.getElementById('inNombre').value.trim();
     PIN=document.getElementById('inPin').value.trim();
+    if(!NOMBRE||!PIN){ msg('msgLogin','Completá nombre y PIN','bad'); return; }
     msg('msgLogin','Verificando...','');
     cargarEstado(true);
   }
@@ -187,6 +179,7 @@
       document.getElementById('login').classList.add('hidden');
       document.getElementById('registro').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
+      document.getElementById('miNombre').textContent=NOMBRE;
       render(e);
       cargarRanking();
     });
