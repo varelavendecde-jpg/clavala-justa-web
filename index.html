@@ -54,7 +54,8 @@
     .vs{ color:var(--mut); font-size:12px; font-style:normal; font-weight:600; }
     .meta{ font-size:12px; color:var(--mut); margin-bottom:6px; }
     .pozo{ color:var(--cyan); font-weight:700; }
-    .jugadores{ font-size:12px; color:var(--cyan); margin-bottom:10px; }
+    .jugadores{ font-size:12px; color:var(--cyan); margin-bottom:6px; }
+    .premio{ font-size:13px; color:var(--gold); font-weight:700; margin-bottom:10px; }
     .goles{ display:flex; gap:10px; align-items:flex-end; }
     .goles>div{ flex:1; }
     .goles input{ text-align:center; font-size:22px; font-weight:700; padding:12px; }
@@ -241,6 +242,9 @@
       cont.innerHTML=e.partidos.map(function(p){
         var nombrePartido=p.local+' vs '+p.visitante;
         var jugStr=(p.jugadores&&p.jugadores.length)?p.jugadores.join(', '):'';
+        var pozoNum=Number(p.pozo)||0;
+        var acumNum=Number(p.acumulado)||0;
+        var premioEstimado=Math.round((pozoNum+acumNum)*0.90);
         if(apostados[nombrePartido]){
           var a=apostados[nombrePartido];
           var estadoHtml;
@@ -249,16 +253,19 @@
           else estadoHtml='<div class="yaapostaste">✓ Ya apostaste: '+a.pronostico+'</div>';
           return '<div class="card">'
             +'<div class="match-top"><span>'+p.local+'</span><span class="vs">VS</span><span>'+p.visitante+'</span></div>'
-            +'<div class="meta">'+p.fecha+' · <span class="pozo">Pozo: $'+p.pozo+'</span></div>'
+            +'<div class="meta">'+p.fecha+' · <span class="pozo">Pozo: $'+pozoNum+'</span>'
+            +(acumNum?' (+$'+acumNum+' acum.)':'')+'</div>'
             +(jugStr?'<div class="jugadores">👥 '+jugStr+'</div>':'')
+            +'<div class="premio">🏆 Ganador se lleva ~$'+premioEstimado+'</div>'
             +estadoHtml
             +'</div>';
         }
         return '<div class="card">'
           +'<div class="match-top"><span>'+p.local+'</span><span class="vs">VS</span><span>'+p.visitante+'</span></div>'
-          +'<div class="meta">'+p.fecha+' · <span class="pozo">Pozo: $'+p.pozo+'</span>'
-          +(p.acumulado?' (+$'+p.acumulado+' acum.)':'')+'</div>'
+          +'<div class="meta">'+p.fecha+' · <span class="pozo">Pozo: $'+pozoNum+'</span>'
+          +(acumNum?' (+$'+acumNum+' acum.)':'')+'</div>'
           +'<div class="jugadores">👥 '+(jugStr?jugStr:'Sé el primero en jugar')+'</div>'
+          +'<div class="premio">🏆 Ganador se lleva ~$'+premioEstimado+'</div>'
           +'<div class="goles">'
           +'<div><span class="lbl">'+p.local.substring(0,3)+'</span><input id="gl_'+p.id+'" type="tel" inputmode="numeric" value="0"></div>'
           +'<div><span class="lbl">'+p.visitante.substring(0,3)+'</span><input id="gv_'+p.id+'" type="tel" inputmode="numeric" value="0"></div>'
