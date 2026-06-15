@@ -222,7 +222,7 @@
       cont.innerHTML=r.ranking.slice(0,10).map(function(x,i){
         return '<div class="rk'+(i===0?' top1':'')+'">'
           +'<span class="pos">'+(i+1)+'</span>'
-          +'<span class="nom">'+x.nombre+'</span>'
+          +'<span class="nom">'+esc(x.nombre)+'</span>'
           +'<span class="ac">'+x.aciertos+' ✓</span></div>';
       }).join('');
     });
@@ -241,7 +241,8 @@
     } else {
       cont.innerHTML=e.partidos.map(function(p){
         var nombrePartido=p.local+' vs '+p.visitante;
-        var jugStr=(p.jugadores&&p.jugadores.length)?p.jugadores.join(', '):'';
+        var L=esc(p.local), V=esc(p.visitante);
+        var jugStr=(p.jugadores&&p.jugadores.length)?p.jugadores.map(esc).join(', '):'';
         var pozoNum=Number(p.pozo)||0;
         var acumNum=Number(p.acumulado)||0;
         var premioEstimado=Math.round((pozoNum+acumNum)*0.90);
@@ -250,9 +251,9 @@
           var estadoHtml;
           if(a.estado==='Ganada') estadoHtml='<div class="resultado-win">🎉 ¡Ganaste! +$'+a.premio+'</div>';
           else if(a.estado==='Perdida') estadoHtml='<div class="resultado-lose">😞 Perdiste, ¡suerte la próxima!</div>';
-          else estadoHtml='<div class="yaapostaste">✓ Ya apostaste: '+a.pronostico+'</div>';
+          else estadoHtml='<div class="yaapostaste">✓ Ya apostaste: '+esc(a.pronostico)+'</div>';
           return '<div class="card">'
-            +'<div class="match-top"><span>'+p.local+'</span><span class="vs">VS</span><span>'+p.visitante+'</span></div>'
+            +'<div class="match-top"><span>'+L+'</span><span class="vs">VS</span><span>'+V+'</span></div>'
             +'<div class="meta">'+p.fecha+' · <span class="pozo">Pozo: $'+pozoNum+'</span>'
             +(acumNum?' (+$'+acumNum+' acum.)':'')+'</div>'
             +(jugStr?'<div class="jugadores">👥 '+jugStr+'</div>':'')
@@ -261,14 +262,14 @@
             +'</div>';
         }
         return '<div class="card">'
-          +'<div class="match-top"><span>'+p.local+'</span><span class="vs">VS</span><span>'+p.visitante+'</span></div>'
+          +'<div class="match-top"><span>'+L+'</span><span class="vs">VS</span><span>'+V+'</span></div>'
           +'<div class="meta">'+p.fecha+' · <span class="pozo">Pozo: $'+pozoNum+'</span>'
           +(acumNum?' (+$'+acumNum+' acum.)':'')+'</div>'
           +'<div class="jugadores">👥 '+(jugStr?jugStr:'Sé el primero en jugar')+'</div>'
           +'<div class="premio">🏆 Ganador se lleva ~$'+premioEstimado+'</div>'
           +'<div class="goles">'
-          +'<div><span class="lbl">'+p.local.substring(0,3)+'</span><input id="gl_'+p.id+'" type="tel" inputmode="numeric" value="0"></div>'
-          +'<div><span class="lbl">'+p.visitante.substring(0,3)+'</span><input id="gv_'+p.id+'" type="tel" inputmode="numeric" value="0"></div>'
+          +'<div><span class="lbl">'+esc(p.local.substring(0,3))+'</span><input id="gl_'+p.id+'" type="tel" inputmode="numeric" value="0"></div>'
+          +'<div><span class="lbl">'+esc(p.visitante.substring(0,3))+'</span><input id="gv_'+p.id+'" type="tel" inputmode="numeric" value="0"></div>'
           +'</div>'
           +'<div class="montofijo">Apuesta: $2000</div>'
           +'<button onclick="apostar(\''+p.id+'\')">Clavar apuesta</button>'
@@ -284,7 +285,7 @@
         if(a.estado==='Ganada') est='<b>Ganada +$'+a.premio+'</b>';
         else if(a.estado==='Perdida') est='<span class="perd">Perdida</span>';
         else est='<span class="pend">Pendiente</span>';
-        return '<div class="ap">'+a.partido+' · '+a.pronostico+' · $'+a.monto+' · '+est+'</div>';
+        return '<div class="ap">'+esc(a.partido)+' · '+esc(a.pronostico)+' · $'+a.monto+' · '+est+'</div>';
       }).join('');
     } else { ma.innerHTML='<div class="meta">Sin apuestas todavía.</div>'; }
   }
@@ -306,6 +307,8 @@
   function salir(){ localStorage.removeItem('cj_n'); localStorage.removeItem('cj_p'); location.reload(); }
 
   function msg(idEl,t,cls){ var el=document.getElementById(idEl); el.textContent=t; el.className='msg '+(cls||''); }
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 </script>
 </body>
 </html>
