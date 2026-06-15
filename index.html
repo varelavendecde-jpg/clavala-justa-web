@@ -45,8 +45,8 @@
       cursor:pointer; transition:transform .08s;
     }
     button:active{ transform:scale(.98); }
-    .btn-mp{ background:linear-gradient(135deg, var(--orange), #c2410c);
-             color:#fff; box-shadow:0 0 20px rgba(249,115,22,.3); }
+    .btn-alias{ background:linear-gradient(135deg, var(--orange), #c2410c);
+             color:#fff; box-shadow:0 0 20px rgba(249,115,22,.3); font-size:20px; }
     .btn-sec{ background:none; box-shadow:none; color:var(--cyan); font-weight:600;
               font-size:14px; padding:8px; }
     .match-top{ display:flex; justify-content:space-between; align-items:center;
@@ -59,6 +59,7 @@
     .goles input{ text-align:center; font-size:22px; font-weight:700; padding:12px; }
     .montofijo{ text-align:center; color:var(--mut); font-size:13px; margin-top:8px; }
     .yaapostaste{ text-align:center; color:var(--cyan); font-weight:700; padding:8px 0; }
+    .instr{ font-size:13px; color:var(--mut); line-height:1.5; margin-bottom:6px; }
     .hidden{ display:none; }
     .msg{ text-align:center; font-size:14px; padding:8px 0 0; min-height:18px; }
     .ok{ color:var(--cyan); } .bad{ color:var(--err); }
@@ -108,8 +109,11 @@
 
     <div class="card">
       <span class="lbl">Cargar saldo</span>
-      <input id="inCarga" type="tel" inputmode="numeric" placeholder="Monto $">
-      <button class="btn-mp" onclick="cargar()">Cargar con Mercado Pago</button>
+      <div class="instr">1. Transferí a este alias:</div>
+      <button class="btn-alias" onclick="copiarAlias()">clavalajusta 📋</button>
+      <div class="instr" style="margin-top:14px">2. Poné cuánto transferiste y avisá:</div>
+      <input id="inCarga" type="tel" inputmode="numeric" placeholder="Monto transferido $">
+      <button onclick="avisarTransferencia()">Ya transferí</button>
       <div id="msgCarga" class="msg"></div>
     </div>
 
@@ -130,6 +134,7 @@
 
 <script>
   var API='https://script.google.com/macros/s/AKfycbycpOAamkiqPc2Ih0OxEeaOiH8fikZa-OMLRYUiyEs5ZP4z-G8e-CYRycjh48wtDrkTSQ/exec';
+  var ALIAS='clavalajusta';
   var NOMBRE='', PIN='', _cbId=0;
 
   function api(params, cb){
@@ -182,6 +187,26 @@
       document.getElementById('miNombre').textContent=NOMBRE;
       render(e);
       cargarRanking();
+    });
+  }
+
+  function copiarAlias(){
+    navigator.clipboard.writeText(ALIAS).then(function(){
+      msg('msgCarga','Alias copiado: '+ALIAS,'ok');
+    }, function(){
+      msg('msgCarga','Copialo a mano: '+ALIAS,'bad');
+    });
+  }
+
+  function avisarTransferencia(){
+    var m=document.getElementById('inCarga').value;
+    if(!(Number(m)>0)){ msg('msgCarga','Poné el monto que transferiste','bad'); return; }
+    msg('msgCarga','Enviando aviso...','');
+    api({action:'pedirRecarga', nombre:NOMBRE, pin:PIN, monto:m}, function(r){
+      if(r.ok){
+        msg('msgCarga','¡Aviso enviado! Se acreditará cuando se verifique.','ok');
+        document.getElementById('inCarga').value='';
+      } else msg('msgCarga', r.error, 'bad');
     });
   }
 
@@ -255,16 +280,6 @@
     api({action:'apostar', nombre:NOMBRE, pin:PIN, partidoID:id, gl:gl, gv:gv}, function(r){
       if(r.ok){ msg('msg_'+id,'¡Apuesta clavada!','ok'); cargarEstado(false); }
       else msg('msg_'+id,r.error,'bad');
-    });
-  }
-
-  function cargar(){
-    var m=document.getElementById('inCarga').value;
-    if(!(Number(m)>0)){ msg('msgCarga','Monto inválido','bad'); return; }
-    msg('msgCarga','Generando link...','');
-    api({action:'crearPreferencia', nombre:NOMBRE, pin:PIN, monto:m}, function(r){
-      if(r.ok) window.location.href=r.link;
-      else msg('msgCarga',r.error,'bad');
     });
   }
 
