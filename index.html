@@ -260,7 +260,7 @@
           else estadoHtml='<div class="yaapostaste">✓ Ya apostaste: '+esc(a.pronostico)+'</div>';
           return '<div class="card">'
             +'<div class="match-top"><span>'+L+'</span><span class="vs">VS</span><span>'+V+'</span></div>'
-            +'<div class="meta">'+p.fecha+' · <span class="pozo">Pozo: $'+pozoNum+'</span>'
+            +'<div class="meta"><b style="color:var(--mut)">'+p.id+'</b> · '+p.fecha+' · <span class="pozo">Pozo: $'+pozoNum+'</span>'
             +(acumNum?' (+$'+acumNum+' acum.)':'')+'</div>'
             +(jugStr?'<div class="jugadores">👥 '+jugStr+'</div>':'')
             +'<div class="premio">🏆 Ganador se lleva ~$'+premioEstimado+'</div>'
@@ -270,7 +270,7 @@
         if(!p.abierto){
           return '<div class="card">'
             +'<div class="match-top"><span>'+L+'</span><span class="vs">VS</span><span>'+V+'</span></div>'
-            +'<div class="meta">'+p.fecha+' · <span class="pozo">Pozo: $'+pozoNum+'</span>'
+            +'<div class="meta"><b style="color:var(--mut)">'+p.id+'</b> · '+p.fecha+' · <span class="pozo">Pozo: $'+pozoNum+'</span>'
             +(acumNum?' (+$'+acumNum+' acum.)':'')+'</div>'
             +(jugStr?'<div class="jugadores">👥 '+jugStr+'</div>':'')
             +'<div class="premio">🏆 Ganador se lleva ~$'+premioEstimado+'</div>'
@@ -279,7 +279,7 @@
         }
         return '<div class="card">'
           +'<div class="match-top"><span>'+L+'</span><span class="vs">VS</span><span>'+V+'</span></div>'
-          +'<div class="meta">'+p.fecha+' · <span class="pozo">Pozo: $'+pozoNum+'</span>'
+          +'<div class="meta"><b style="color:var(--mut)">'+p.id+'</b> · '+p.fecha+' · <span class="pozo">Pozo: $'+pozoNum+'</span>'
           +(acumNum?' (+$'+acumNum+' acum.)':'')+'</div>'
           +'<div class="jugadores">👥 '+(jugStr?jugStr:'Sé el primero en jugar')+'</div>'
           +'<div class="premio">🏆 Ganador se lleva ~$'+premioEstimado+'</div>'
