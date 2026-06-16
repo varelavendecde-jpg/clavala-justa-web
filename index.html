@@ -47,6 +47,8 @@
     button:active{ transform:scale(.98); }
     .btn-alias{ background:linear-gradient(135deg, var(--orange), #c2410c);
              color:#fff; box-shadow:0 0 20px rgba(249,115,22,.3); font-size:20px; }
+    .btn-green{ background:linear-gradient(135deg, var(--green), #059669);
+             color:#04121b; box-shadow:0 0 20px rgba(52,211,153,.35); }
     .btn-sec{ background:none; box-shadow:none; color:var(--cyan); font-weight:600;
               font-size:14px; padding:8px; }
     .match-top{ display:flex; justify-content:space-between; align-items:center;
@@ -117,7 +119,7 @@
       <button class="btn-alias" onclick="copiarAlias()">clavalajusta 📋</button>
       <div class="meta" style="margin-top:14px;margin-bottom:6px">2. Poné cuánto transferiste y avisá:</div>
       <input id="inCarga" type="tel" inputmode="numeric" placeholder="Monto transferido $">
-      <button onclick="avisarTransferencia()">Ya transferí</button>
+      <button class="btn-green" onclick="avisarTransferencia()">Ya transferí</button>
       <div id="msgCarga" class="msg"></div>
     </div>
 
