@@ -251,6 +251,7 @@
           var estadoHtml;
           if(a.estado==='Ganada') estadoHtml='<div class="resultado-win">🎉 ¡Ganaste! +$'+a.premio+'</div>';
           else if(a.estado==='Perdida') estadoHtml='<div class="resultado-lose">😞 Perdiste, ¡suerte la próxima!</div>';
+          else if(!p.abierto) estadoHtml='<div class="yaapostaste">🔴 En juego · apostaste: '+esc(a.pronostico)+'</div>';
           else estadoHtml='<div class="yaapostaste">✓ Ya apostaste: '+esc(a.pronostico)+'</div>';
           return '<div class="card">'
             +'<div class="match-top"><span>'+L+'</span><span class="vs">VS</span><span>'+V+'</span></div>'
@@ -259,6 +260,16 @@
             +(jugStr?'<div class="jugadores">👥 '+jugStr+'</div>':'')
             +'<div class="premio">🏆 Ganador se lleva ~$'+premioEstimado+'</div>'
             +estadoHtml
+            +'</div>';
+        }
+        if(!p.abierto){
+          return '<div class="card">'
+            +'<div class="match-top"><span>'+L+'</span><span class="vs">VS</span><span>'+V+'</span></div>'
+            +'<div class="meta">'+p.fecha+' · <span class="pozo">Pozo: $'+pozoNum+'</span>'
+            +(acumNum?' (+$'+acumNum+' acum.)':'')+'</div>'
+            +(jugStr?'<div class="jugadores">👥 '+jugStr+'</div>':'')
+            +'<div class="premio">🏆 Ganador se lleva ~$'+premioEstimado+'</div>'
+            +'<div class="yaapostaste">🔴 En juego · apuestas cerradas</div>'
             +'</div>';
         }
         return '<div class="card">'
