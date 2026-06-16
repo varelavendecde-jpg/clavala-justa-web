@@ -105,6 +105,7 @@
   <div id="app" class="hidden">
     <div class="card">
       <span class="lbl">Hola, <span id="miNombre"></span></span>
+      <div id="saludo" style="font-size:13px;color:var(--cyan);margin:-2px 0 10px;font-weight:600"></div>
       <div class="saldo">$<span id="saldo">0</span></div>
       <div class="acum">🔥 Pozo acumulado: $<span id="acum">0</span></div>
       <div class="campeon">🏆 Pozo Campeón: $<span id="campeon">0</span></div>
@@ -188,6 +189,7 @@
       document.getElementById('registro').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
       document.getElementById('miNombre').textContent=NOMBRE;
+      saludar(NOMBRE);
       render(e);
       cargarRanking();
     });
@@ -250,6 +252,7 @@
           var a=apostados[nombrePartido];
           var estadoHtml;
           if(a.estado==='Ganada') estadoHtml='<div class="resultado-win">🎉 ¡Ganaste! +$'+a.premio+'</div>';
+          else if(a.estado==='GanadaParcial') estadoHtml='<div class="resultado-win">◐ ¡Acertaste el ganador! +$'+a.premio+'</div>';
           else if(a.estado==='Perdida') estadoHtml='<div class="resultado-lose">😞 Perdiste, ¡suerte la próxima!</div>';
           else if(!p.abierto) estadoHtml='<div class="yaapostaste">🔴 En juego · apostaste: '+esc(a.pronostico)+'</div>';
           else estadoHtml='<div class="yaapostaste">✓ Ya apostaste: '+esc(a.pronostico)+'</div>';
@@ -294,6 +297,7 @@
       ma.innerHTML=e.misApuestas.map(function(a){
         var est=a.estado;
         if(a.estado==='Ganada') est='<b>Ganada +$'+a.premio+'</b>';
+        else if(a.estado==='GanadaParcial') est='<b>Acertó ganador +$'+a.premio+'</b>';
         else if(a.estado==='Perdida') est='<span class="perd">Perdida</span>';
         else est='<span class="pend">Pendiente</span>';
         return '<div class="ap">'+esc(a.partido)+' · '+esc(a.pronostico)+' · $'+a.monto+' · '+est+'</div>';
@@ -316,6 +320,18 @@
   }
 
   function salir(){ localStorage.removeItem('cj_n'); localStorage.removeItem('cj_p'); location.reload(); }
+
+  function saludar(nombre){
+    var frases=[
+      '¿Cómo estás hoy? ¡Listo para ganar! 🔥',
+      '¡Qué bueno verte! ¿Clavamos un resultado? 🎯',
+      '¡A romperla hoy! 💪',
+      '¿Preparado para clavarla justa? 🏆',
+      '¡Vamos que se puede! ¿Qué marcador va hoy? ⚽'
+    ];
+    var el=document.getElementById('saludo');
+    if(el) el.textContent=frases[Math.floor(Math.random()*frases.length)];
+  }
 
   function msg(idEl,t,cls){ var el=document.getElementById(idEl); el.textContent=t; el.className='msg '+(cls||''); }
 
